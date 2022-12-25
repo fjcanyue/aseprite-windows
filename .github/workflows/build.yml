@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        repository: 'https://github.com/aseprite/aseprite'
+        repository: 'aseprite/aseprite'
         ref: ${{ github.event.inputs.ref }}
         submodules: 'recursive'
     - uses: seanmiddleditch/gha-setup-ninja@master
