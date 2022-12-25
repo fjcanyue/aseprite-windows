@@ -7,6 +7,10 @@ on:
         description: 'branch/tag ref'
         required: false
         default: 'main'
+env:
+  REPO: 'aseprite/aseprite'
+  FIRMWARE: 'D:/a/aseprite-windows/aseprite-windows/build/bin'
+  UPLOAD_RELEASE: true
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -23,7 +27,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        repository: 'aseprite/aseprite'
+        repository: ${{ env.REPO }}
         ref: ${{ github.event.inputs.ref }}
         submodules: 'recursive'
     - uses: seanmiddleditch/gha-setup-ninja@master
@@ -53,7 +57,23 @@ jobs:
         cd build && ninja
     - uses: actions/upload-artifact@v3.1.1
       with:
-        name: aseprite
+        name: aseprite-windows
         path: |
-          D:/a/aseprite/aseprite/build/bin/data
-          D:/a/aseprite/aseprite/build/bin/aseprite.exe
+          ${{ env.FIRMWARE }}/data
+          ${{ env.FIRMWARE }}/aseprite.exe
+    - name: Generate release tag
+      id: tag
+      if: env.UPLOAD_RELEASE == 'true' && not cancelled()
+      run: |
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        touch release.txt
+        echo "" >> release.txt
+    - name: Upload firmware to release
+      uses: softprops/action-gh-release@v1
+      if: steps.tag.conclusion == 'success' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: release.txt
+        files: ${{ env.FIRMWARE }}/*        
