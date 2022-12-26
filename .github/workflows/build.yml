@@ -65,6 +65,7 @@ jobs:
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
+        7z a ${{ env.BUILD_PATH }}/aseprite.7z ${{ env.BUILD_PATH }}/data ${{ env.BUILD_PATH }}/aseprite.exe
         echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
         touch release.txt
         echo "Aseprite ${{ github.event.inputs.ref }}" >> release.txt
@@ -77,5 +78,4 @@ jobs:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
         files: |
-          ${{ env.BUILD_PATH }}/data
-          ${{ env.BUILD_PATH }}/aseprite.exe 
+          ${{ env.BUILD_PATH }}/aseprite.7z 
