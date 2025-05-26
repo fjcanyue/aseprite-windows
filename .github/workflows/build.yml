@@ -2,13 +2,8 @@ name: build
 on:
   schedule:
     - cron: '0 0 * * *'
-  repository_dispatch:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'branch/tag ref'
-        required: false
-        default: 'main'
+
 env:
   REPO: 'aseprite/aseprite'
   BUILD_PATH: 'D:/a/aseprite-windows/aseprite-windows/build/bin'
