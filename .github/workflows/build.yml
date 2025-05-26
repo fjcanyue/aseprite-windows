@@ -1,5 +1,7 @@
 name: build
 on:
+  schedule:
+    - cron: '0 0 * * *'
   repository_dispatch:
   workflow_dispatch:
     inputs:
@@ -25,10 +27,26 @@ jobs:
             build_type: Release
             enable_ui: on
     steps:
+    - name: Get latest aseprite/aseprite release tag
+      id: aseprite_release
+      shell: bash
+      run: |
+        latest_tag=$(curl -s https://api.github.com/repos/aseprite/aseprite/releases/latest | jq -r .tag_name)
+        my_latest_tag=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases | jq -r '.[0].tag_name')
+        if [[ "$latest_tag" == "$my_latest_tag" ]]; then
+          echo "skip_build=true" >> $GITHUB_OUTPUT
+          exit 0
+        else
+          echo "aseprite_tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "skip_build=false" >> $GITHUB_OUTPUT
+        fi
+    - name: Stop if no new release
+      if: steps.aseprite_release.outputs.skip_build == 'true'
+      run: exit 0
     - uses: actions/checkout@v3
       with:
         repository: ${{ env.REPO }}
-        ref: ${{ github.event.inputs.ref }}
+        ref: ${{ steps.aseprite_release.outputs.aseprite_tag }}
         submodules: 'recursive'
     - uses: seanmiddleditch/gha-setup-ninja@master
     - uses: ilammy/msvc-dev-cmd@v1
