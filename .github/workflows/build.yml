@@ -84,9 +84,9 @@ jobs:
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         7z a ${{ env.BUILD_PATH }}/aseprite.7z ${{ env.BUILD_PATH }}/data ${{ env.BUILD_PATH }}/aseprite.exe
-        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        echo "::set-output name=release_tag::${{ steps.aseprite_release.outputs.aseprite_tag }}"
         touch release.txt
-        echo "Aseprite ${{ github.event.inputs.ref }}" >> release.txt
+        echo "Aseprite ${{ steps.aseprite_release.outputs.aseprite_tag }}" >> release.txt
     - name: Upload build to release
       uses: softprops/action-gh-release@v1
       if: steps.tag.conclusion == 'success' && !cancelled()
