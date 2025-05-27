@@ -52,7 +52,7 @@ jobs:
 
     - name: Setup Skia (download pre-built)
       run: |
-        curl -L -o skia.zip https://github.com/aseprite/skia/releases/download/m124-aseprite-linux/skia-windows.zip
+        curl -L -o skia.zip https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-Windows-Release-x64.zip
         7z x skia.zip -oskia
 
     - name: Setup MSVC environment
