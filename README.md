@@ -1,6 +1,6 @@
 # Aseprite Windows Build
 
-This repository provides scripts and instructions for building [**Aseprite**](https://github.com/aseprite/aseprite) for Windows from source.
+This repository provides scripts and instructions for building [**Aseprite**](https://github.com/aseprite/aseprite) from source on Windows.
 
 ## Important Notice: Aseprite EULA Compliance
 
@@ -19,15 +19,15 @@ This project is subject to the [Aseprite End User License Agreement (EULA)](http
 > All scripts and instructions are provided for personal building purposes only, in compliance with the [Aseprite EULA](https://github.com/aseprite/aseprite/blob/main/EULA.txt).  
 > **If you build or distribute release binaries, you must make this repository private.**
 
-## How to Build (for Personal Use Only)
+## How to Build (For Personal Use Only)
 
-1. Use this template (or fork) privately.
-2. (Optional) Add schedule to run daliy build.
+1. Use this template (or fork) as a private repository.
+2. (Optional) Add a schedule to run daily builds.
    ```
    schedule:
-    - cron: '0 0 * * *
+     - cron: '0 0 * * *'
    ```
-4. Do **not** distribute compiled binaries unless you have a commercial license.
+3. Do **not** distribute compiled binaries unless you have a commercial license.
 
 ## Disclaimer
 
@@ -38,5 +38,6 @@ All rights for Aseprite belong to David Capello and contributors.
 
 ## FAQ
 
-## libcrypto-1_1-x64.dll Not Found
-Download [OpenSSL 1.1.1 binary for windows](https://kb.firedaemon.com/support/solutions/articles/4000121705-openssl-3-1-3-0-and-1-1-1-binary-distributions-for-microsoft-windows), and extract ```openssl-1.1\x64\bin\libcrypto-1_1-x64.dll``` to the PATH or aseprite home directory. 
+### libcrypto-1_1-x64.dll Not Found
+
+Download the [OpenSSL 1.1.1 binary for Windows](https://kb.firedaemon.com/support/solutions/articles/4000121705-openssl-3-1-3-0-and-1-1-1-binary-distributions-for-microsoft-windows), and extract the required DLL files to the appropriate location.
