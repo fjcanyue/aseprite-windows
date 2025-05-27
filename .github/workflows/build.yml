@@ -40,7 +40,10 @@ jobs:
         fi
     - name: Stop if no new release
       if: steps.aseprite_release.outputs.skip_build == 'true'
-      run: exit 0
+      uses: actions/github-script@v6
+      with:
+        script: |
+          core.setFailed('No new version. Stopping the build.');
     - uses: actions/checkout@v3
       with:
         repository: ${{ env.REPO }}
