@@ -21,9 +21,13 @@ This project is subject to the [Aseprite End User License Agreement (EULA)](http
 
 ## How to Build (for Personal Use Only)
 
-1. Clone this repository (or fork privately if you need to build binaries).
-2. Update `.github/workflows/build.yml` file, change `UPLOAD_RELEASE` environment variable to `true`.
-3. Do **not** distribute compiled binaries unless you have a commercial license.
+1. Use this template (or fork) privately.
+2. (Optional) Add schedule to run daliy build.
+   ```
+   schedule:
+    - cron: '0 0 * * *
+   ```
+4. Do **not** distribute compiled binaries unless you have a commercial license.
 
 ## Disclaimer
 
