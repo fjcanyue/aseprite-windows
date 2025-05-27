@@ -10,7 +10,7 @@ env:
   SKIA_LIBRARY_DIR: ${{ github.workspace }}\skia\out\Release-x64
   SKIA_LIBRARY: ${{ github.workspace }}\skia\out\Release-x64\skia.lib
   BUILD_PATH: 'D:/a/aseprite-windows/aseprite-windows/build/bin'
-  UPLOAD_RELEASE: true
+  UPLOAD_RELEASE: false
 jobs:
   build:
     runs-on: ${{ matrix.os }}
