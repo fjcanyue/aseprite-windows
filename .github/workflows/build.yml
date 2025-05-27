@@ -6,6 +6,9 @@ on:
 
 env:
   REPO: 'aseprite/aseprite'
+  SKIA_DIR: ${{ github.workspace }}\skia
+  SKIA_LIBRARY_DIR: ${{ github.workspace }}\skia\out\Release-x64
+  SKIA_LIBRARY: ${{ github.workspace }}\skia\out\Release-x64\skia.lib
   BUILD_PATH: 'D:/a/aseprite-windows/aseprite-windows/build/bin'
   UPLOAD_RELEASE: true
 jobs:
@@ -43,31 +46,29 @@ jobs:
         repository: ${{ env.REPO }}
         ref: ${{ steps.aseprite_release.outputs.aseprite_tag }}
         submodules: 'recursive'
-    - uses: seanmiddleditch/gha-setup-ninja@master
-    - uses: ilammy/msvc-dev-cmd@v1
-      if: runner.os == 'Windows'
-    - name: Generating Makefiles
-      shell: bash
+
+    - name: Setup Ninja
+      uses: seanmiddleditch/gha-setup-ninja@v4
+
+    - name: Setup Skia (download pre-built)
       run: |
-        if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          export enable_ccache=off
-        else
-          export enable_ccache=on
-        fi
-        curl -L https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-Windows-Release-x64.zip --output skia.zip
+        curl -L -o skia.zip https://github.com/aseprite/skia/releases/download/m124-aseprite-linux/skia-windows.zip
         7z x skia.zip -oskia
-        cmake -S . -B build -G Ninja \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DENABLE_UI=${{ matrix.enable_ui }} \
-          -DENABLE_CCACHE=$enable_ccache \
-          -DLAF_BACKEND=skia \
-          -DSKIA_DIR=./skia \
-          -DSKIA_LIBRARY_DIR=./skia/out/Release-x64 \
-          -DSKIA_LIBRARY=./skia/out/Release-x64/skia.lib
-    - name: Compiling
-      shell: bash
+
+    - name: Setup MSVC environment
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure with CMake
       run: |
-        cd build && ninja
+        mkdir build
+        cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLAF_BACKEND=skia -DSKIA_DIR="${{ env.SKIA_DIR }}" -DSKIA_LIBRARY_DIR="${{ env.SKIA_LIBRARY_DIR }}" -DSKIA_LIBRARY="${{ env.SKIA_LIBRARY }}" ..
+
+    - name: Build
+      run: |
+        cd build
+        ninja aseprite
+
     - uses: actions/upload-artifact@v4
       with:
         name: aseprite-windows
