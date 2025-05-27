@@ -23,7 +23,7 @@ This project is subject to the [Aseprite End User License Agreement (EULA)](http
 
 1. Use this template (or fork) as a private repository.
 2. (Optional) Add a schedule to run daily builds.
-   ```
+   ```yaml
    schedule:
      - cron: '0 0 * * *'
    ```
