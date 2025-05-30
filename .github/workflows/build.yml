@@ -10,8 +10,30 @@ env:
   BUILD_PATH: 'D:/a/aseprite-windows/aseprite-windows/build/bin'
   UPLOAD_RELEASE: true
 jobs:
+  pre-check:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_build: ${{ steps.check.outputs.skip_build }}
+      aseprite_tag: ${{ steps.check.outputs.aseprite_tag }}
+    steps:
+    - name: Get latest aseprite/aseprite release tag
+      id: check
+      shell: bash
+      run: |
+        latest_tag=$(curl -s https://api.github.com/repos/aseprite/aseprite/releases/latest | jq -r .tag_name)
+        my_latest_tag=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r 'if type == "array" and length > 0 then .[0].tag_name else empty end')
+        echo "latest_tag: $latest_tag"
+        echo "my_latest_tag: $my_latest_tag"
+        if [[ "$latest_tag" == "$my_latest_tag" ]]; then
+          echo "skip_build=true" >> $GITHUB_OUTPUT
+          exit 0
+        else
+          echo "aseprite_tag=$latest_tag" >> $GITHUB_OUTPUT
+          echo "skip_build=false" >> $GITHUB_OUTPUT
+        fi
   build:
     runs-on: ${{ matrix.os }}
+    needs: pre-check
     permissions:
       contents: write
     strategy:
@@ -24,30 +46,13 @@ jobs:
           - os: windows-latest
             build_type: Release
             enable_ui: on
+    if: needs.pre-check.outputs.skip_build == 'false'
     steps:
-    - name: Get latest aseprite/aseprite release tag
-      id: aseprite_release
-      shell: bash
-      run: |
-        latest_tag=$(curl -s https://api.github.com/repos/aseprite/aseprite/releases/latest | jq -r .tag_name)
-        my_latest_tag=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases | jq -r 'if type == "array" and length > 0 then .[0].tag_name else empty end')
-        if [[ "$latest_tag" == "$my_latest_tag" ]]; then
-          echo "skip_build=true" >> $GITHUB_OUTPUT
-          exit 0
-        else
-          echo "aseprite_tag=$latest_tag" >> $GITHUB_OUTPUT
-          echo "skip_build=false" >> $GITHUB_OUTPUT
-        fi
-    - name: Stop if no new release
-      if: steps.aseprite_release.outputs.skip_build == 'true'
-      uses: actions/github-script@v6
-      with:
-        script: |
-          core.setFailed('No new version. Stopping the build.');
-    - uses: actions/checkout@v3
+    - name: Checkout Aseprite source code
+      uses: actions/checkout@v3
       with:
         repository: ${{ env.REPO }}
-        ref: ${{ steps.aseprite_release.outputs.aseprite_tag }}
+        ref: ${{ needs.pre-check.outputs.aseprite_tag }}
         submodules: 'recursive'
 
     - name: Setup Ninja
@@ -72,7 +77,8 @@ jobs:
         cd build
         ninja aseprite
 
-    - uses: actions/upload-artifact@v4
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
         name: aseprite-windows
         path: |
@@ -83,9 +89,9 @@ jobs:
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         7z a ${{ env.BUILD_PATH }}/aseprite.7z ${{ env.BUILD_PATH }}/data ${{ env.BUILD_PATH }}/aseprite.exe
-        echo "::set-output name=release_tag::${{ steps.aseprite_release.outputs.aseprite_tag }}"
+        echo "::set-output name=release_tag::${{ needs.pre-check.outputs.aseprite_tag }}"
         touch release.txt
-        echo "Aseprite ${{ steps.aseprite_release.outputs.aseprite_tag }}" >> release.txt
+        echo "Aseprite ${{ needs.pre-check.outputs.aseprite_tag }}" >> release.txt
     - name: Upload build to release
       uses: softprops/action-gh-release@v1
       if: steps.tag.conclusion == 'success' && !cancelled()
@@ -95,4 +101,4 @@ jobs:
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
         files: |
-          ${{ env.BUILD_PATH }}/aseprite.7z 
+          ${{ env.BUILD_PATH }}/aseprite.7z
