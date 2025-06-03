@@ -7,7 +7,7 @@ env:
   SKIA_DIR: ${{ github.workspace }}\skia
   SKIA_LIBRARY_DIR: ${{ github.workspace }}\skia\out\Release-x64
   SKIA_LIBRARY: ${{ github.workspace }}\skia\out\Release-x64\skia.lib
-  BUILD_PATH: 'D:/a/aseprite-windows/aseprite-windows/build/bin'
+  BUILD_PATH: '${{ github.workspace }}/build/bin'
   UPLOAD_RELEASE: true
 jobs:
   pre-check:
@@ -89,16 +89,15 @@ jobs:
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         7z a ${{ env.BUILD_PATH }}/aseprite.7z ${{ env.BUILD_PATH }}/data ${{ env.BUILD_PATH }}/aseprite.exe
-        echo "::set-output name=release_tag::${{ needs.pre-check.outputs.aseprite_tag }}"
         touch release.txt
         echo "Aseprite ${{ needs.pre-check.outputs.aseprite_tag }}" >> release.txt
     - name: Upload build to release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: steps.tag.conclusion == 'success' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
+        tag_name: ${{ needs.pre-check.outputs.aseprite_tag }}
         body_path: release.txt
         files: |
-          ${{ env.BUILD_PATH }}/aseprite.7z
+          ${{ env.BUILD_PATH }}/aseprite.7z 
