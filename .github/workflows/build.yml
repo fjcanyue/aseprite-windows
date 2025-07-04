@@ -24,6 +24,10 @@ jobs:
         my_latest_tag=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/releases | jq -r 'if type == "array" and length > 0 then .[0].tag_name else empty end')
         echo "latest_tag: $latest_tag"
         echo "my_latest_tag: $my_latest_tag"
+        if [[ -z "$latest_tag" || "$latest_tag" == "null" ]]; then
+          echo "skip_build=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
         if [[ "$latest_tag" == "$my_latest_tag" ]]; then
           echo "skip_build=true" >> $GITHUB_OUTPUT
           exit 0
@@ -100,4 +104,4 @@ jobs:
         tag_name: ${{ needs.pre-check.outputs.aseprite_tag }}
         body_path: release.txt
         files: |
-          ${{ env.BUILD_PATH }}/aseprite.7z 
+          ${{ env.BUILD_PATH }}/aseprite.7z
